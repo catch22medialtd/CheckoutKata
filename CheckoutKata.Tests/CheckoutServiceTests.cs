@@ -76,5 +76,22 @@ namespace CheckoutKata.Tests
 
             Assert.AreEqual(actual, expected);
         }
+
+        [TestCase(new string[] { }, 0)]
+        [TestCase(new string[] { "A" }, 50)]
+        [TestCase(new string[] { "A", "B" }, 80)]
+        [TestCase(new string[] { "A", "A", "A", "B" }, 160)]
+        [TestCase(new string[] { "A", "A", "A", "B", "B", "D" }, 190)]
+        [TestCase(new string[] { "A", "A", "A", "B", "B", "C", "D" }, 210)]
+
+        public void Given_Basket_Has_Various_Different_Items_When_GetTotalPrice_Is_Invoked_Then_Correct_Total_Is_Returned(string[] items, decimal expected)
+        {
+            foreach (var item in items)
+                _checkoutService.Scan(item);
+
+            var actual = _checkoutService.GetTotalPrice();
+
+            Assert.AreEqual(actual, expected);
+        }
     }
 }
