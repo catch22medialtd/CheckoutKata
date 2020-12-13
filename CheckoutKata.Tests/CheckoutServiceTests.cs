@@ -14,8 +14,8 @@ namespace CheckoutKata.Tests
         {
             var pricingRules = new List<PricingRule>()
             {
-                new PricingRule() { SKU = "A", UnitPrice = 50 },
-                new PricingRule() { SKU = "B", UnitPrice = 30 },
+                new PricingRule() { SKU = "A", UnitPrice = 50, MultiBuyPrice = 130, MultiBuyQuantity = 3 },
+                new PricingRule() { SKU = "B", UnitPrice = 30, MultiBuyPrice = 45, MultiBuyQuantity = 2 },
                 new PricingRule() { SKU = "C", UnitPrice = 20 },
                 new PricingRule() { SKU = "D", UnitPrice = 15 }
             };
@@ -59,6 +59,20 @@ namespace CheckoutKata.Tests
 
             var actual = _checkoutService.GetTotalPrice();
             var expected = 100;
+
+            Assert.AreEqual(actual, expected);
+        }
+
+        [Test]
+        public void Given_Basket_Has_MultiBuy_Items_When_GetTotalPrice_Is_Invoked_Then_Correct_Total_Returned()
+        {
+            var items = new string[] { "A", "A", "A", "B" };
+
+            foreach (var item in items)
+                _checkoutService.Scan(item);
+
+            var actual = _checkoutService.GetTotalPrice();
+            var expected = 160;
 
             Assert.AreEqual(actual, expected);
         }
