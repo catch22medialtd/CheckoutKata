@@ -23,5 +23,21 @@ namespace CheckoutKata.Tests
             Assert.AreEqual(expected, actual);
 
         }
+
+        [Test]
+        public void Given_Basket_Has_One_Item_When_GetTotalPrice_Invoked_Then_Correct_Total_Returned()
+        {
+            var items = new string[] { "A" };
+
+            foreach (var item in items)
+            {
+                _checkoutService.Scan(item);
+            }
+
+            var actual = _checkoutService.GetTotalPrice();
+            var expected = 50;
+
+            Assert.AreEqual(expected, actual);
+        }
     }
 }
