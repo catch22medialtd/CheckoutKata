@@ -5,24 +5,29 @@ namespace CheckoutKata.Library
 {
     public class CheckoutService : ICheckoutService
     {
-        private List<string> _basketItems;
+        private List<PricingRule> _pricingRules;
+        private List<BasketItem> _basketItems;
 
-        public CheckoutService()
+        public CheckoutService(List<PricingRule> pricingRules)
         {
-            _basketItems = new List<string>();
+            _pricingRules = pricingRules;
+            _basketItems = new List<BasketItem>();
         }
 
         public void Scan(string item)
         {
-            _basketItems.Add(item);
+            var pricingRule = _pricingRules.FirstOrDefault(pr => pr.SKU == item);
+            var basketItem = new BasketItem() { SKU = pricingRule.SKU, Total = pricingRule.UnitPrice };
+
+            _basketItems.Add(basketItem);
         }
 
         public decimal GetTotalPrice()
         {
-            if (_basketItems.Contains("A") && _basketItems.Count() == 1)
-                return 50;
+            if (!_basketItems.Any())
+                return 0;
 
-            return 0;
+            return _basketItems.Sum(bi => bi.Total);
         }
     }
 }

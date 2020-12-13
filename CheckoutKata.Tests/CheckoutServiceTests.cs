@@ -1,5 +1,6 @@
 using CheckoutKata.Library;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace CheckoutKata.Tests
 {
@@ -11,7 +12,15 @@ namespace CheckoutKata.Tests
         [SetUp]
         public void Setup()
         {
-            _checkoutService = new CheckoutService();
+            var pricingRules = new List<PricingRule>()
+            {
+                new PricingRule() { SKU = "A", UnitPrice = 50 },
+                new PricingRule() { SKU = "B", UnitPrice = 30 },
+                new PricingRule() { SKU = "C", UnitPrice = 20 },
+                new PricingRule() { SKU = "D", UnitPrice = 15 }
+            };
+
+            _checkoutService = new CheckoutService(pricingRules);
         }
 
         [Test]
@@ -38,6 +47,20 @@ namespace CheckoutKata.Tests
             var expected = 50;
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void Given_Basket_Has_Multiple_Non_MultiBuy_Items_When_GetTotalPrice_Is_Invoked_Then_Correct_Total_Returned()
+        {
+            var items = new string[] { "A", "B", "C" };
+
+            foreach (var item in items)
+                _checkoutService.Scan(item);
+
+            var actual = _checkoutService.GetTotalPrice();
+            var expected = 100;
+
+            Assert.AreEqual(actual, expected);
         }
     }
 }
