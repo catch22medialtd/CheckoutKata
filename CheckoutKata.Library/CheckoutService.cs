@@ -5,21 +5,23 @@ namespace CheckoutKata.Library
 {
     public class CheckoutService : ICheckoutService
     {
+        private IShoppingBagService _shoppingBagService;
         private List<PricingRule> _pricingRules;
+        private readonly int _shoppingBagCost;
         private List<BasketItem> _basketItems;
 
-        public CheckoutService(List<PricingRule> pricingRules)
+        public CheckoutService(List<PricingRule> pricingRules, int shoppingBagCost = 5)
         {
+            _shoppingBagService = new ShoppingBagService();
             _pricingRules = pricingRules;
+            _shoppingBagCost = shoppingBagCost;
             _basketItems = new List<BasketItem>();
         }
 
         public void Scan(string item)
         {
-            // get the pricing rule for this item
             var pricingRule = _pricingRules.FirstOrDefault(pr => pr.SKU == item);
             
-            // create a new basketitem for this using this rule
             var basketItem = new BasketItem()
             {
                 SKU = pricingRule.SKU,
@@ -27,23 +29,18 @@ namespace CheckoutKata.Library
                 Total = pricingRule.UnitPrice
             };
 
-            // add the item to the basket
             _basketItems.Add(basketItem);
 
-            // Its a multibuy product check for discounts in the basket
             if (pricingRule.MultiBuyQuantity > 0)
                 CheckForMultiBuyDiscounts(pricingRule);
         }
 
         private void CheckForMultiBuyDiscounts(PricingRule pricingRule)
         {
-            // If we have enough single items in the basket to satisfy a multibuy rule
             if (_basketItems.Count(bi => bi.SKU == pricingRule.SKU && !bi.IsMultiBuyItem) == pricingRule.MultiBuyQuantity)
             {
-                // remove the single items
                 _basketItems.RemoveAll(bi => bi.SKU == pricingRule.SKU && !bi.IsMultiBuyItem);
 
-                // add a multibuy item in there place
                 var multiBuyBasketItem = new BasketItem()
                 {
                     SKU = pricingRule.SKU,
@@ -61,7 +58,20 @@ namespace CheckoutKata.Library
             if (!_basketItems.Any())
                 return 0;
 
-            return _basketItems.Sum(bi => bi.Total);
+            var total = _basketItems.Sum(bi => bi.Total);
+            var totalShoppingBags = _shoppingBagService.GetTotalShoppingBags(GetBasketCount());
+
+            return total + _shoppingBagCost * totalShoppingBags;
+        }
+
+        private int GetBasketCount()
+        {
+            int count = 0;
+
+            foreach (var item in _basketItems)
+                count += item.IsMultiBuyItem ? item.Quantity : 1;
+
+            return count;
         }
     }
 }
